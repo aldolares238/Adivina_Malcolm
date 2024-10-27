@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina Quién - Malcolm el de en Medio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSADnPWqTR_eytvqhQzIHW90SDy9yXMM7bq0w&s');
+            background-size: cover; /* Ajusta el tamaño de la imagen de fondo */
+            color: white; /* Color de texto general en blanco para contraste */
+            text-align: center;
+            padding: 20px;
+            display: flex;
+        }
+        .question {
+            margin: 20px 0;
+            flex: 2;
+            background-color: rgba(0, 0, 0, 0.7); /* Fondo negro semi-transparente */
+            border-radius: 10px; /* Bordes redondeados */
+            padding: 20px; /* Espaciado interno */
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .form-section {
+            margin-top: 40px;
+        }
+        img {
+            max-width: 100px; /* Cambié el tamaño de la imagen para que sea más pequeño */
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .character-list {
+            flex: 1;
+            margin-left: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco semi-transparente */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .character-list h2 {
+            text-align: left;
+        }
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columnas */
+            gap: 10px; /* Espaciado entre los elementos */
+            margin-top: 10px;
+        }
+        .character-item {
+            text-align: center; /* Centrar el texto */
+        }
+        .character-item h3 {
+            font-size: 18px; /* Aumenté el tamaño de los nombres */
+            margin: 10px 0 0 0; /* Margen para separar el nombre de la imagen */
+            color: black; /* Cambié el color del texto a negro */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="question">
+        <h1>Adivina Quién - Malcolm el de en Medio</h1>
+        <p>Responde las preguntas para adivinar qué personaje de Malcolm estás pensando.</p>
+
+        <div id="question-container" class="question">
+            <p id="question">¿El personaje es menor de edad?</p>
+            <button class="btn" onclick="answer('yes')">Sí</button>
+            <button class="btn" onclick="answer('no')">No</button>
+        </div>
+
+        <div id="result-container" class="question" style="display: none;">
+            <p id="result"></p>
+            <img id="character-image" src="" alt="Imagen del personaje" style="display: none; max-width: 300px; max-height: 300px;">
+            <button class="btn" onclick="resetGame()">Jugar de nuevo</button>
+        </div>
+
+        <div class="form-section">
+            <h2>Agregar un nuevo personaje</h2>
+            <button class="btn" onclick="openModal()">Agregar personaje</button>
+            <div id="modal" style="display:none;">
+                <h3>Nuevo Personaje</h3>
+                <form id="new-character-form" onsubmit="addCharacter(event)">
+                    <label for="name">Nombre del personaje:</label><br>
+                    <input type="text" id="name" name="name" required><br><br>
+
+                    <label for="image">URL de la imagen:</label><br>
+                    <input type="text" id="image" name="image" required><br><br>
+
+                    <label>Responde las preguntas para el personaje:</label><br>
+                    <label>¿El personaje es menor de edad?</label><br>
+                    <input type="radio" name="q1" value="sí" required> Sí
+                    <input type="radio" name="q1" value="no"> No<br><br>
+
+                    <label>¿El personaje es parte de la familia de Malcolm?</label><br>
+                    <input type="radio" name="q2" value="sí" required> Sí
+                    <input type="radio" name="q2" value="no"> No<br><br>
+
+                    <label>¿El personaje es discapacitado?</label><br>
+                    <input type="radio" name="q3" value="sí" required> Sí
+                    <input type="radio" name="q3" value="no"> No<br><br>
+
+                    <label>¿El personaje tiene un trabajo raro?</label><br>
+                    <input type="radio" name="q4" value="sí" required> Sí
+                    <input type="radio" name="q4" value="no"> No<br><br>
+
+                    <label>¿El personaje es amigo de Malcolm?</label><br>
+                    <input type="radio" name="q5" value="sí" required> Sí
+                    <input type="radio" name="q5" value="no"> No<br><br>
+
+                    <button type="submit" class="btn">Agregar personaje</button>
+                </form>
+                <button class="btn" onclick="closeModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Otros estilos... */
+    
+        .character-list h2 {
+            text-align: left; /* Alinea el texto a la izquierda */
+            color: black; /* Cambia el color del texto a negro */
+        }
+    
+        /* Otros estilos... */
+    </style>
+    
+    <div class="character-list">
+        <h2>Personajes a adivinar</h2>
+        <div id="character-display" class="character-grid"></div>
+    </div>
+
+    <script>
+        let questions = [
+            "¿El personaje es menor de edad?",
+            "¿El personaje es parte de la familia de Malcolm?",
+            "¿El personaje es discapacitado?",
+            "¿El personaje tiene un trabajo raro?",
+            "¿El personaje es amigo de Malcolm?"
+        ];
+
+        let answers = [];
+        let currentQuestionIndex = 0;
+        let characters;
+        let matchingCharacters = [];
+
+        // Cargar personajes desde el archivo JSON
+        fetch('characters.json')
+            .then(response => response.json())
+            .then(data => {
+                characters = data;
+                displayCharacterList(characters);
+            });
+
+        function answer(response) {
+            answers.push(response === 'yes' ? 'sí' : 'no'); // Normalizamos las respuestas
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById("question").innerText = questions[currentQuestionIndex];
+            } else {
+                filterCharacters();
+            }
+        }
+
+        function filterCharacters() {
+            matchingCharacters = characters.filter(char => {
+                return char.answers.every((ans, index) => ans === answers[index]);
+            });
+
+            if (matchingCharacters.length === 1) {
+                // Si solo hay un personaje coincidente, mostrarlo
+                showResult(matchingCharacters[0]);
+            } else if (matchingCharacters.length > 1) {
+                // Si hay varios personajes coincidentes, hacer una pregunta adicional
+                askAdditionalQuestion();
+            } else {
+                document.getElementById("result").innerText = "No pudimos adivinar el personaje.";
+                document.getElementById("character-image").style.display = "none";
+                document.getElementById("question-container").style.display = "none";
+                document.getElementById("result-container").style.display = "block";
+            }
+        }
+
+        function askAdditionalQuestion() {
+            // Seleccionar el primer personaje coincidente y hacer una pregunta sobre él
+            let firstCharacter = matchingCharacters[0];
+            let question = `¿El personaje es ${firstCharacter.name}?`;
+            document.getElementById("question").innerText = question;
+
+            // Modificar los botones para manejar la respuesta adicional
+            document.querySelector(".btn:nth-child(2)").setAttribute("onclick", "confirmCharacter('yes')");
+            document.querySelector(".btn:nth-child(3)").setAttribute("onclick", "confirmCharacter('no')");
+        }
+
+        function confirmCharacter(response) {
+            if (response === 'yes') {
+                showResult(matchingCharacters[0]);
+            } else {
+                // Si no es el primer personaje, pasar al siguiente coincidente
+                if (matchingCharacters.length > 1) {
+                    matchingCharacters.shift(); // Remover el primer personaje
+                    if (matchingCharacters.length === 1) {
+                        showResult(matchingCharacters[0]); // Mostrar el siguiente personaje si es el único restante
+                    } else {
+                        askAdditionalQuestion(); // Volver a preguntar por el siguiente
+                    }
+                }
+            }
+        }
+
+        function showResult(character) {
+            document.getElementById("result").innerText = `¡Adiviné! El personaje es ${character.name}.`;
+            document.getElementById("character-image").src = character.image;
+            document.getElementById("character-image").style.display = "block";
+            document.getElementById("question-container").style.display = "none";
+            document.getElementById("result-container").style.display = "block";
+        }
+
+        function resetGame() {
+            currentQuestionIndex = 0;
+            answers = [];
+            document.getElementById("result-container").style.display = "none";
+            document.getElementById("question-container").style.display = "block";
+            document.getElementById("character-image").style.display = "none";
+            document.getElementById("question").innerText = questions[currentQuestionIndex];
+        }
+
+        function displayCharacterList(characters) {
+            const characterDisplay = document.getElementById("character-display");
+            characterDisplay.innerHTML = ''; // Limpiar la lista anterior
+            characters.forEach(character => {
+                const characterItem = document.createElement("div");
+                characterItem.classList.add("character-item");
+                characterItem.innerHTML = `<img src="${character.image}" alt="${character.name}"><h3>${character.name}</h3>`;
+                characterDisplay.appendChild(characterItem);
+            });
+        }
+
+        function openModal() {
+            document.getElementById("modal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+        }
+
+        function addCharacter(event) {
+            event.preventDefault();
+            const newCharacter = {
+                name: document.getElementById("name").value,
+                image: document.getElementById("image").value,
+                answers: [
+                    document.querySelector('input[name="q1"]:checked').value,
+                    document.querySelector('input[name="q2"]:checked').value,
+                    document.querySelector('input[name="q3"]:checked').value,
+                    document.querySelector('input[name="q4"]:checked').value,
+                    document.querySelector('input[name="q5"]:checked').value
+                ]
+            };
+
+            characters.push(newCharacter);
+            displayCharacterList(characters);
+            closeModal();
+            document.getElementById("new-character-form").reset(); // Reiniciar el formulario
+        }
+
+        function resetGame() {
+            currentQuestionIndex = 0;
+            answers = [];
+            matchingCharacters = [];
+            document.getElementById("result-container").style.display = "none";
+            document.getElementById("question-container").style.display = "block";
+            document.getElementById("character-image").style.display = "none";
+            document.getElementById("question").innerText = questions[currentQuestionIndex];
+
+            // Restablecer los botones a su funcionalidad inicial
+            document.querySelector(".btn:nth-child(2)").setAttribute("onclick", "answer('yes')");
+            document.querySelector(".btn:nth-child(3)").setAttribute("onclick", "answer('no')");
+        }
+
+    </script>
+</body>
+</html>
